@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from . import helpers
+from . import merge
 
 def get_hmm():
     """Get a thought."""
@@ -8,5 +8,5 @@ def get_hmm():
 
 def hmm():
     """Contemplation..."""
-    if helpers.get_answer():
+    if merge.extract():
         print(get_hmm())

@@ -9,7 +9,8 @@ with open('README.md') as f:
     readme = f.read()
 
 with open('LICENSE.md') as f:
-    license = f.read()
+    # license = f.read()
+    licence = "Affero GPL v3"
 
 setup(
     name='auto-mkv',
