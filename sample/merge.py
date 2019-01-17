@@ -52,9 +52,8 @@ def extract_audio(file_path):
 
 def extract_all_in_path(folder_path):
     """Get an answer."""
-    files_flat = glob.glob(folder_path + os.sep + "*.mkv")
-    files_sub_folders = glob.glob(folder_path + os.sep + "**" + os.sep + "*.mkv")
-    for file in files_flat + files_sub_folders:
+    files = glob.glob(folder_path + os.sep + "**" + os.sep + "*.mkv",  recursive=True)
+    for file in files:
         extract_audio(file)
     return True
 
