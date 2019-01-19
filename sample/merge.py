@@ -20,9 +20,9 @@ def parse_mkvinfo_result(lines):
     tracks = [list(group) for key, group in itertools.groupby(lines, lambda line: line == "| + Track") if not key]
     result = []
     for track in tracks:
-        language_info = [info for info in track if info.startswith("|  + Language: ")] + ["|  + Language: und"]
+        language_info = [info for info in track if info.startswith("|  + Language: ")] + ["|  + Language: eng"]
         language = language_info[0][15:]
-        codec_info = [info for info in track if info.startswith("|  + Codec ID: ")] + ["|  + Track type: und"]
+        codec_info = [info for info in track if info.startswith("|  + Codec ID: ")] + ["|  + Track type: eng"]
         codec = codec_info[0][17:].lower()
         result += [(codec, language)]
     return result
@@ -47,7 +47,7 @@ def extract_audio(file_path):
 
 def extract_all_in_path(folder_path):
     """Get an answer."""
-    files = glob.glob(folder_path + os.sep + "**" + os.sep + "*.mkv",  recursive=True)
+    files = glob.glob(folder_path + os.sep + "**" + os.sep + "*.mkv", recursive=True)
     for file in files:
         if len(glob.glob(file + "_*")) == 0:
             extract_audio(file)
@@ -56,16 +56,22 @@ def extract_all_in_path(folder_path):
 
 def reencode_audio(folder_path):
     """Get an answer."""
-    files = glob.glob(folder_path + os.sep + "**" + os.sep + "*.ac3",  recursive=True)
-    files += glob.glob(folder_path + os.sep + "**" + os.sep + "*.dts",  recursive=True)
+    files = glob.glob(folder_path + os.sep + "**" + os.sep + "*.ac3", recursive=True)
+    files += glob.glob(folder_path + os.sep + "**" + os.sep + "*.dts", recursive=True)
+    files.sort()
     for file in files:
         print("Reencode : " + file)
         if len(glob.glob(file + "_*")) == 0:
-            subprocess.run([eac3to, file, "stdout.wav", "|", neroaac, "-br", " 96000", "-if", "-", "-of", file + "_096.aac"], shell=True, check=True)
-            subprocess.run([eac3to, file, "stdout.wav", "|", neroaac, "-br", "112000", "-if", "-", "-of", file + "_112.aac"], shell=True, check=True)
-            subprocess.run([eac3to, file, "stdout.wav", "|", neroaac, "-br", "128000", "-if", "-", "-of", file + "_128.aac"], shell=True, check=True)
-            subprocess.run([eac3to, file, "stdout.wav", "|", neroaac, "-br", "160000", "-if", "-", "-of", file + "_160.aac"], shell=True, check=True)
-            subprocess.run([eac3to, file, "stdout.wav", "|", neroaac, "-br", "192000", "-if", "-", "-of", file + "_192.aac"], shell=True, check=True)
+            for bitrate in ["096", "112", "128", "160", "192", "224", "256"]:
+                try:
+                    subprocess.run(
+                        [eac3to, file, "stdout.wav", "|", neroaac, "-br", bitrate + "000", "-if", "-", "-of", file + "_" + bitrate + ".aac"],
+                        shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                    )
+                    print("           " + bitrate)
+                except subprocess.CalledProcessError:
+                    print("           " + bitrate + " error")
+                    os.remove(file + "_" + bitrate + ".aac")
             os.remove(file)
     return True
 
