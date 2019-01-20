@@ -49,7 +49,7 @@ def extract_all_in_path(folder_path):
     """Get an answer."""
     files = glob.glob(folder_path + os.sep + "**" + os.sep + "*.mkv", recursive=True)
     for file in files:
-        if len(glob.glob(file + "_*")) == 0:
+        if len(glob.glob(file[:-4] + "_*")) == 0:
             extract_audio(file)
     return True
 
@@ -71,7 +71,8 @@ def reencode_audio(folder_path):
                     print("           " + bitrate)
                 except subprocess.CalledProcessError:
                     print("           " + bitrate + " error")
-                    os.remove(file + "_" + bitrate + ".aac")
+                    if os.path.exists(file + "_" + bitrate + ".aac"):
+                        os.remove(file + "_" + bitrate + ".aac")
             os.remove(file)
     return True
 
