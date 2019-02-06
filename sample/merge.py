@@ -65,7 +65,8 @@ def reencode_audio(folder_path):
             for bitrate in ["096", "112", "128", "160", "192", "224", "256"]:
                 try:
                     subprocess.run(
-                        [eac3to, file, "stdout.wav", "|", neroaac, "-br", bitrate + "000", "-if", "-", "-of", file + "_" + bitrate + ".aac"],
+                        [eac3to, file, "stdout.wav", "|",
+                         neroaac, "-br", bitrate + "000", "-if", "-", "-of", file + "_" + bitrate + ".aac"],
                         shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
                     )
                     print("           " + bitrate)
@@ -73,6 +74,7 @@ def reencode_audio(folder_path):
                     print("           " + bitrate + " error")
                     if os.path.exists(file + "_" + bitrate + ".aac"):
                         os.remove(file + "_" + bitrate + ".aac")
-            os.remove(file)
+            if os.path.exists(file + "_*.aac"):
+                os.remove(file)
     return True
 
