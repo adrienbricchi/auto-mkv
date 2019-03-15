@@ -72,9 +72,9 @@ def reencode_audio(folder_path):
                     print("           " + bitrate)
                 except subprocess.CalledProcessError:
                     print("           " + bitrate + " error")
-                    if len(glob.glob(file + "_" + bitrate + ".aac")) == 0:
+                    if len(glob.glob(file + "_" + bitrate + ".aac")) == 1:
                         os.remove(file + "_" + bitrate + ".aac")
-            if len(glob.glob(file + "_*.aac")) == 0:
+            if len(glob.glob(file + "_*.aac")) > 0:
                 os.remove(file)
     return True
 
