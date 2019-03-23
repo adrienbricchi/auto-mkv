@@ -54,15 +54,27 @@ def extract_all_in_path(folder_path):
     return True
 
 
+def get_bitrates(file_path):
+    root_folder = os.path.dirname(os.path.normpath(file_path))
+    bitrate_file_candidates = glob.glob(root_folder + "/*.bitrate")
+    if len(bitrate_file_candidates) == 1:
+        file_bitrate = os.path.basename(bitrate_file_candidates[0])
+        return file_bitrate[:-8].split("-")
+    else:
+        return ["096", "112", "128", "160", "192", "224", "256"]
+
+
 def reencode_audio(folder_path):
     """Get an answer."""
     files = glob.glob(folder_path + os.sep + "**" + os.sep + "*.ac3", recursive=True)
     files += glob.glob(folder_path + os.sep + "**" + os.sep + "*.dts", recursive=True)
     files.sort()
+
     for file in files:
         print("Reencode : " + file)
+        bitrates = get_bitrates(file)
         if len(glob.glob(file + "_*")) == 0:
-            for bitrate in ["096", "112", "128", "160", "192", "224", "256"]:
+            for bitrate in bitrates:
                 try:
                     subprocess.run(
                         [eac3to, file, "stdout.wav", "|",
