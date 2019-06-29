@@ -69,6 +69,7 @@ def reencode_audio(folder_path):
     """Get an answer."""
     files = glob.glob(folder_path + os.sep + "**" + os.sep + "*.ac3", recursive=True)
     files += glob.glob(folder_path + os.sep + "**" + os.sep + "*.dts", recursive=True)
+    files += glob.glob(folder_path + os.sep + "**" + os.sep + "*.thd", recursive=True)
     files.sort()
 
     for file in files:
