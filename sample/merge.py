@@ -38,8 +38,11 @@ def extract_audio(file_path):
     """Get an answer."""
     tracks = retrieve_tracks(file_path)
     for i in range(0, len(tracks)):
-        if tracks[i][0] == "ac3" or tracks[i][0] == "dts":
-            track_name = file_path[:-4] + "_track" + str(i + 1) + "_" + tracks[i][1] + "_DELAY 0ms." + tracks[i][0]
+        extension = tracks[i][0]
+        if extension == "truehd":
+            extension = "thd"
+        if extension == "ac3" or extension == "dts" or extension == "thd":
+            track_name = file_path[:-4] + "_track" + str(i + 1) + "_" + tracks[i][1] + "_DELAY 0ms." + extension
             if not os.path.exists(track_name):
                 subprocess.run([mkvextract, file_path, "tracks", str(i) + ":" + track_name], shell=True, check=True)
     return True
@@ -56,7 +59,7 @@ def extract_all_in_path(folder_path):
 
 def get_bitrates(file_path):
     root_folder = os.path.dirname(os.path.normpath(file_path))
-    bitrate_file_candidates = glob.glob(root_folder + "/*.bitrate")
+    bitrate_file_candidates = glob.glob(root_folder + os.sep + "*.bitrate")
     if len(bitrate_file_candidates) == 1:
         file_bitrate = os.path.basename(bitrate_file_candidates[0])
         return file_bitrate[:-8].split("-")
@@ -78,12 +81,12 @@ def reencode_audio(folder_path):
                 try:
                     subprocess.run(
                         [eac3to, file, "stdout.wav", "|",
-                         neroaac, "-br", bitrate + "000", "-if", "-", "-of", file + "_" + bitrate + ".aac"],
+                         neroaac, "-br", str(bitrate) + "000", "-if", "-", "-of", file + "_" + bitrate + ".aac"],
                         shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
                     )
-                    print("           " + bitrate)
+                    print("           " + str(bitrate))
                 except subprocess.CalledProcessError:
-                    print("           " + bitrate + " error")
+                    print("           " + str(bitrate) + " error")
                     if len(glob.glob(file + "_" + bitrate + ".aac")) == 1:
                         os.remove(file + "_" + bitrate + ".aac")
             if len(glob.glob(file + "_*.aac")) > 0:
