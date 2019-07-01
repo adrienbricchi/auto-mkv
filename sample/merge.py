@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 import configparser
 import subprocess
 import os
@@ -9,6 +9,7 @@ from send2trash import send2trash
 
 config = configparser.ConfigParser()
 config.read('config.ini')
+
 mkvextract = config["DEPENDANCIES"]['mkvtextract_path']
 mkvinfo = config["DEPENDANCIES"]['mkvinfo_path']
 eac3to = config["DEPENDANCIES"]['eac3to_path']
@@ -48,7 +49,7 @@ def extract_audio(file_path):
     for i in range(0, len(tracks)):
         extension = tracks[i][0] if tracks[i][0] != "truehd" else "thd"
         if extension in ("ac3", "dts", "eac3", "thd"):
-            track_name = file_path[:-4] + "_track" + str(i + 1) + "_" + tracks[i][1] + "_DELAY 0ms." + extension
+            track_name = file_path[:-4] + "_track" + str(i + 1) + "_[" + tracks[i][1] + "]_DELAY 0ms." + extension
             if not os.path.exists(track_name):
                 subprocess.run([mkvextract, file_path, "tracks", str(i) + ":" + track_name], shell=True, check=True)
     return True
