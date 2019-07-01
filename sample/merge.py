@@ -4,6 +4,7 @@ import subprocess
 import os
 import glob
 import itertools
+from send2trash import send2trash
 
 
 config = configparser.ConfigParser()
@@ -12,6 +13,13 @@ mkvextract = config["DEPENDANCIES"]['mkvtextract_path']
 mkvinfo = config["DEPENDANCIES"]['mkvinfo_path']
 eac3to = config["DEPENDANCIES"]['eac3to_path']
 neroaac = config["DEPENDANCIES"]['nero_aac_path']
+
+
+def delete(path):
+    if config["PARAMETERS"]['use_trash']:
+        send2trash(path)
+    else:
+        os.remove(path)
 
 
 def parse_mkvinfo_result(lines):
@@ -87,8 +95,8 @@ def reencode_audio(folder_path):
                 except subprocess.CalledProcessError:
                     print("           " + str(bitrate) + " error")
                     if len(glob.glob(file + "_" + bitrate + ".aac")) == 1:
-                        os.remove(file + "_" + bitrate + ".aac")
+                        delete(file + "_" + bitrate + ".aac")
             if len(glob.glob(file + "_*.aac")) > 0:
-                os.remove(file)
+                delete(file)
     return True
 
