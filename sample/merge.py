@@ -47,7 +47,7 @@ def extract_audio(file_path):
     tracks = retrieve_tracks(file_path)
     for i in range(0, len(tracks)):
         extension = tracks[i][0] if tracks[i][0] != "truehd" else "thd"
-        if extension in ("ac3", "dts", "thd"):
+        if extension in ("ac3", "dts", "eac3", "thd"):
             track_name = file_path[:-4] + "_track" + str(i + 1) + "_" + tracks[i][1] + "_DELAY 0ms." + extension
             if not os.path.exists(track_name):
                 subprocess.run([mkvextract, file_path, "tracks", str(i) + ":" + track_name], shell=True, check=True)
@@ -78,6 +78,7 @@ def reencode_audio(folder_path):
     files = glob.glob(folder_path + os.sep + "**" + os.sep + "*.ac3", recursive=True)
     files += glob.glob(folder_path + os.sep + "**" + os.sep + "*.dts", recursive=True)
     files += glob.glob(folder_path + os.sep + "**" + os.sep + "*.thd", recursive=True)
+    files += glob.glob(folder_path + os.sep + "**" + os.sep + "*.eac3", recursive=True)
     files.sort()
 
     for file in files:
