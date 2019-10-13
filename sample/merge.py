@@ -17,10 +17,11 @@ neroaac = config["DEPENDANCIES"]['nero_aac_path']
 
 
 def delete(path):
-    if config["PARAMETERS"]['use_trash']:
-        send2trash(path)
-    else:
-        os.remove(path)
+    if os.path.exists(path):
+        if config["PARAMETERS"]['use_trash'] == "true":
+            send2trash(path)
+        else:
+            os.remove(path)
 
 
 def parse_mkvinfo_result(lines):
@@ -96,8 +97,7 @@ def reencode_audio(folder_path):
                     print("           " + str(bitrate))
                 except subprocess.CalledProcessError:
                     print("           " + str(bitrate) + " error")
-                    if len(glob.glob(file + "_" + bitrate + ".aac")) == 1:
-                        delete(file + "_" + bitrate + ".aac")
+                    delete(file + "_" + bitrate + ".aac")
             if len(glob.glob(file + "_*.aac")) > 0:
                 delete(file)
     return True
