@@ -11,6 +11,7 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 mkvextract = config["DEPENDANCIES"]['mkvtextract_path']
+mkvmerge = config["DEPENDANCIES"]['mkvmerge_path']
 mkvinfo = config["DEPENDANCIES"]['mkvinfo_path']
 eac3to = config["DEPENDANCIES"]['eac3to_path']
 neroaac = config["DEPENDANCIES"]['nero_aac_path']
@@ -102,3 +103,22 @@ def reencode_audio(folder_path):
                 delete(file)
     return True
 
+
+def remux_audio(folder_path):
+    """Get an answer."""
+    files = glob.glob(folder_path + os.sep + "**" + os.sep + "*.aac", recursive=True)
+    files.sort()
+
+    for file in files:
+        print("Remux : " + file)
+        file_remuxed = file[:-3] + "mka"
+        try:
+            subprocess.run(
+                [mkvmerge, "--ui-language", "fr", "--sync", "0:0",  "--language", "0:und",
+                 "--output", file_remuxed, "(", file, ")"],
+                shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            )
+            delete(file)
+        except subprocess.CalledProcessError:
+            print("           " + " error")
+            delete(file_remuxed)
