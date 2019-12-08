@@ -27,7 +27,7 @@ from send2trash import send2trash
 
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('config.ini', encoding='utf-8')
 
 mkvextract = config["DEPENDANCIES"]['mkvtextract_path']
 mkvmerge = config["DEPENDANCIES"]['mkvmerge_path']
@@ -141,3 +141,57 @@ def remux_audio(folder_path):
         except subprocess.CalledProcessError:
             print("           " + " error")
             delete(file_remuxed)
+
+
+def remux_file(path):
+    """Get an answer."""
+    print(path)
+
+    todo_files = glob.glob(path + os.sep + "*.mux")
+    if len(todo_files) == 0:
+        return
+
+    todo_file = todo_files[0]
+    todo_string = os.path.basename(os.path.normpath(todo_file))[:-6]
+    todo_string.split()
+    print("todo : " + todo_string)
+    fields = re.compile(r"\[(.*?)=(.*?)([+-]\d+)?\]+").findall(todo_string)
+
+    files = glob.glob(path + os.sep + "*")
+    files_groups = []
+    buffer = []
+    for file in files:
+        if file.endswith(".mkv"):
+            if buffer:
+                files_groups.append(buffer.copy())
+                buffer.clear()
+        buffer.append(file)
+
+    for files_group in files_groups:
+        complete = True
+        for field in fields:
+            print(field)
+            current = True
+
+            if field[0] == "video":
+                current = [i for i in files_group if i.endswith(".mkv")] != []
+            elif field[0] == "audio":
+                current = [i for i in files_group if i.endswith(".aac") and "[" + field[1] + "]" in i] != []
+            elif field[0] == "sub":
+                current = [i for i in files_group if i.endswith(".srt") and "[" + field[1] + "]" in i] != []
+            elif field[0] == "cover":
+                current = glob.glob(path + os.sep + field[1]) != []
+
+            if not current:
+                print("    ... missing")
+
+            complete = complete and current
+
+        if complete:
+            print("complete !")
+
+        print(files_group)
+
+
+test_path = config["PARAMETERS"]['test_path']
+remux_file(test_path)
