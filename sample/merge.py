@@ -25,7 +25,6 @@ import glob
 import itertools
 from send2trash import send2trash
 
-
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
 
@@ -133,7 +132,7 @@ def remux_audio(folder_path):
         file_remuxed = file[:-3] + "mka"
         try:
             subprocess.run(
-                [mkvmerge, "--ui-language", "fr", "--sync", "0:0",  "--language", "0:und",
+                [mkvmerge, "--ui-language", "fr", "--sync", "0:0", "--language", "0:und",
                  "--output", file_remuxed, "(", file, ")"],
                 shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
@@ -152,7 +151,7 @@ def remux_file(path):
         return
 
     todo_file = todo_files[0]
-    todo_string = os.path.basename(os.path.normpath(todo_file))[:-6]
+    todo_string = os.path.basename(os.path.normpath(todo_file))[:-4]
     todo_string.split()
     print("todo : " + todo_string)
     fields = re.compile(r"\[(.*?)=(.*?)([+-]\d+)?\]+").findall(todo_string)
@@ -166,31 +165,100 @@ def remux_file(path):
                 files_groups.append(buffer.copy())
                 buffer.clear()
         buffer.append(file)
+    files_groups.append(buffer.copy())
+    buffer.clear()
 
     for files_group in files_groups:
+        print([i for i in files_group if i.endswith(".mkv")])
+        command_line = [mkvmerge, "--ui-language", "fr"]
         complete = True
+
         for field in fields:
-            print(field)
-            current = True
+            current = []
 
             if field[0] == "video":
-                current = [i for i in files_group if i.endswith(".mkv")] != []
+                current = [i for i in files_group if i.endswith(".mkv")]
             elif field[0] == "audio":
-                current = [i for i in files_group if i.endswith(".aac") and "[" + field[1] + "]" in i] != []
+                current = [i for i in files_group if i.endswith(".aac") and "[" + field[1] + "]" in i]
             elif field[0] == "sub":
-                current = [i for i in files_group if i.endswith(".srt") and "[" + field[1] + "]" in i] != []
+                current = [i for i in files_group if i.endswith(".srt") and "[" + field[1] + "]" in i]
             elif field[0] == "cover":
-                current = glob.glob(path + os.sep + field[1]) != []
+                current = glob.glob(path + os.sep + field[1])
 
-            if not current:
-                print("    ... missing")
+            if field[0] != "tag":
 
-            complete = complete and current
+                if len(current) < 1:
+                    print("    ... missing " + str(field))
+                    complete = False
+                    break
+                elif len(current) > 1:
+                    print("    ... undetermined" + str(field))
+                    complete = False
+                    break
+
+                current_delay_string = re.compile(r"DELAY (.*?)ms").findall(current[0])
+                current_delay = 0 if current_delay_string == [] else int(current_delay_string[0])
+                set_delay_string = "+0" if not field[2] else field[2]
+                set_delay = int(set_delay_string.replace("+", ""))
+                final_delay = current_delay + set_delay
+
+            if field[0] == "video":
+
+                if config["PARAMETERS"]['use_dots_in_file_name'] == "true":
+                    file_path = os.path.normpath(current[0])[:-4]
+                    file_path = os.path.dirname(file_path) \
+                        + os.sep \
+                        + os.path.basename(file_path).replace(" ", ".") \
+                        + ".().mkv"
+                else:
+                    file_path = os.path.normpath(current[0])[:-4] + " ().mkv"
+
+                command_line.append("--output")
+                command_line.append(file_path)
+                command_line.append("--no-audio")
+                command_line.append("--no-subtitles")
+                command_line.append("--no-attachments")
+                command_line.append("--language")
+                command_line.append("0:" + field[1])
+                command_line.append("--default-track")
+                command_line.append("0:yes")
+                command_line.append("(")
+                command_line.append(os.path.normpath(current[0]))
+                command_line.append(")")
+            elif field[0] == "audio":
+                command_line.append("--language")
+                command_line.append("0:" + field[1])
+                command_line.append("--sync")
+                command_line.append("0:" + str(final_delay))
+                command_line.append("(")
+                command_line.append(os.path.normpath(current[0]))
+                command_line.append(")")
+            elif field[0] == "sub":
+                command_line.append("--language")
+                command_line.append("0:" + field[1])
+                command_line.append("(")
+                command_line.append(os.path.normpath(current[0]))
+                command_line.append(")")
+            elif field[0] == "cover":
+                command_line.append("--attachment-name")
+                command_line.append(os.path.basename(os.path.normpath(current[0])))
+                command_line.append("--attachment-mime-type")
+                command_line.append("image/jpeg")
+                command_line.append("--attach-file")
+                command_line.append(os.path.normpath(current[0]))
+            elif field[0] == "tag":
+                if len(field[1]) > 0:
+                    command_line.append("--title")
+                    command_line.append(field[1])
 
         if complete:
-            print("complete !")
-
-        print(files_group)
+            command_line.append("--track-order")
+            command_line.append(":0,".join([str(i) for i in range(0, len(fields) - 1)]) + ":0")
+            print("complete : " + " ".join(command_line))
+            try:
+                subprocess.check_output(command_line)
+            except subprocess.CalledProcessError as e:
+                print(e.output)
 
 
 test_path = config["PARAMETERS"]['test_path']
