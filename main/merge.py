@@ -262,4 +262,7 @@ def remux_file(path):
 
 
 test_path = config["PARAMETERS"]['test_path']
+extract_all_in_path(test_path)
+reencode_audio(test_path)
+remux_audio(test_path)
 remux_file(test_path)
