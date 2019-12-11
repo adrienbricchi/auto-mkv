@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .context import sample
+from .context import main
 
 import unittest
 
@@ -26,7 +26,7 @@ class AdvancedTestSuite(unittest.TestCase):
     """Advanced test cases."""
 
     def test_thoughts(self):
-        self.assertIsNone(sample.hmm())
+        self.assertIsNone(main.hmm())
 
 
 if __name__ == '__main__':
