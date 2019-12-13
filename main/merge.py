@@ -132,7 +132,7 @@ def remux_audio(folder_path):
         file_remuxed = file[:-3] + "mka"
         try:
             subprocess.run(
-                [mkvmerge, "--ui-language", "fr", "--sync", "0:0", "--language", "0:und",
+                [mkvmerge, "--ui-language", "fr", "--sync", "0:0",
                  "--output", file_remuxed, "(", file, ")"],
                 shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
@@ -161,7 +161,7 @@ def remux_file(path):
     buffer = []
     for file in files:
         if file.endswith(".mkv"):
-            if buffer:
+            if len(buffer) > 0:
                 files_groups.append(buffer.copy())
                 buffer.clear()
         buffer.append(file)
@@ -179,7 +179,10 @@ def remux_file(path):
             if field[0] == "video":
                 current = [i for i in files_group if i.endswith(".mkv")]
             elif field[0] == "audio":
-                current = [i for i in files_group if i.endswith(".aac") and "[" + field[1] + "]" in i]
+                current = [i for i in files_group
+                           if (i.endswith(".aac") or i.endswith(".mka"))
+                           and "[" + field[1] + "]" in i
+                           ]
             elif field[0] == "sub":
                 current = [i for i in files_group if i.endswith(".srt") and "[" + field[1] + "]" in i]
             elif field[0] == "cover":
