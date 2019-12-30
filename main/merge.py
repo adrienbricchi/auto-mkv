@@ -250,9 +250,8 @@ def remux_file(path):
                 command_line.append("--attach-file")
                 command_line.append(os.path.normpath(current[0]))
             elif field[0] == "tag":
-                if len(field[1]) > 0:
-                    command_line.append("--title")
-                    command_line.append(field[1])
+                command_line.append("--title")
+                command_line.append(field[1])
 
         if complete:
             command_line.append("--track-order")
