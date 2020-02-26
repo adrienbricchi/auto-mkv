@@ -154,7 +154,7 @@ def remux_file(path):
     todo_string = os.path.basename(os.path.normpath(todo_file))[:-4]
     todo_string.split()
     print("todo : " + todo_string)
-    fields = re.compile(r"\[(.*?)=(.*?)([+-]\d+)?\]+").findall(todo_string)
+    fields = re.compile(r"\[(.*?)=(.*?)([+\-]\d+)?\]+").findall(todo_string)
 
     files = glob.glob(path + os.sep + "*")
     files_groups = []
@@ -181,8 +181,7 @@ def remux_file(path):
             elif field[0] == "audio":
                 current = [i for i in files_group
                            if (i.endswith(".aac") or i.endswith(".mka"))
-                           and "[" + field[1] + "]" in i
-                           ]
+                           and "[" + field[1] + "]" in i]
             elif field[0] == "sub":
                 current = [i for i in files_group if i.endswith(".srt") and "[" + field[1] + "]" in i]
             elif field[0] == "cover":
@@ -239,6 +238,8 @@ def remux_file(path):
             elif field[0] == "sub":
                 command_line.append("--language")
                 command_line.append("0:" + field[1])
+                command_line.append("--sync")
+                command_line.append("0:" + str(final_delay))
                 command_line.append("(")
                 command_line.append(os.path.normpath(current[0]))
                 command_line.append(")")
@@ -264,7 +265,7 @@ def remux_file(path):
 
 
 test_path = config["PARAMETERS"]['test_path']
-extract_all_in_path(test_path)
-reencode_audio(test_path)
+# extract_all_in_path(test_path)
+# reencode_audio(test_path)
 remux_audio(test_path)
 remux_file(test_path)
