@@ -107,16 +107,17 @@ def reencode_audio(folder_path):
         bitrates = get_bitrates(file)
         if len(glob.glob(file + "_*")) == 0:
             for bitrate in bitrates:
+                new_file_name = file + "_" + bitrate + ".aac"
                 try:
                     subprocess.run(
                         [eac3to, file, "stdout.wav", "|",
-                         neroaac, "-br", str(bitrate) + "000", "-if", "-", "-of", file + "_" + bitrate + ".aac"],
+                         neroaac, "-br", str(bitrate) + "000", "-if", "-", "-of", new_file_name],
                         shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
                     )
                     print("           " + str(bitrate))
                 except subprocess.CalledProcessError:
                     print("           " + str(bitrate) + " error")
-                    delete(file + "_" + bitrate + ".aac")
+                    delete(new_file_name)
             if len(glob.glob(file + "_*.aac")) > 0:
                 delete(file)
     return True
@@ -175,6 +176,7 @@ def remux_file(path):
 
         for field in fields:
             current = []
+            final_delay = 0
 
             if field[0] == "video":
                 current = [i for i in files_group if i.endswith(".mkv")]
@@ -265,7 +267,7 @@ def remux_file(path):
 
 
 test_path = config["PARAMETERS"]['test_path']
-# extract_all_in_path(test_path)
-# reencode_audio(test_path)
+extract_all_in_path(test_path)
+reencode_audio(test_path)
 remux_audio(test_path)
 remux_file(test_path)
